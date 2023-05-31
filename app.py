@@ -9,3 +9,5 @@ def hello_world():
 @app.route('/hello/<name>')
 def hello_name(name):
     return f"<p>Hello, {name}!</p>"
+
+#Cześć Dominik
