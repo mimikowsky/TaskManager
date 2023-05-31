@@ -10,4 +10,5 @@ def hello_world():
 def hello_name(name):
     return f"<p>Hello, {name}!</p>"
 
-#Cześć Dominik
+if __name__ == "__main__":
+    app.run(debug=True)
