@@ -1,11 +1,11 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed 
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 
 
 class RegistrationForm(FlaskForm):
     username = StringField('Nazwa użytkownika', validators=[DataRequired(), Length(min=4, max=20)])
-
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Hasło', validators=[DataRequired(), Length(min=4)])
     confirm_password = PasswordField('Potwierdź hasło', validators=[DataRequired(), EqualTo('password', message="Hasła różnią się.")])
@@ -18,3 +18,9 @@ class LoginForm(FlaskForm):
     password = PasswordField('Hasło', validators=[DataRequired()])
     remember = BooleanField('Zapamiętaj mnie')
     submit = SubmitField('Zaloguj')
+
+class UpdateAccountForm(FlaskForm):
+    username = StringField('Nazwa użytkownika', validators=[DataRequired(), Length(min=4, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    picture = FileField('Zmień zdjęcie profilowe', validators=[FileAllowed(['jpg', 'png'], message="Akceptowane rozszerzenia: jpg, png")])
+    submit = SubmitField('Zaktualizuj')
