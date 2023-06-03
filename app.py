@@ -13,12 +13,12 @@ tasks = [
     {
         'title': 'Msid projekt',
         'description': 'Analiza danych',
-        'deadline': datetime(2023, 6, 3, 10, 13)
+        'deadline': datetime(2023, 6, 3, 12, 0, 0)
     },
     {
         'title': 'Kolokwium linux',
         'description': 'Koncowy test u dr Chudzika',
-        'deadline': '13.06.2023'
+        'deadline': datetime(2023, 6, 10, 9, 0, 0)
     }
 ]
 
