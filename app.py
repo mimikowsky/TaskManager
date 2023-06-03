@@ -2,12 +2,13 @@ from flask import Flask, render_template, url_for, redirect, flash
 from forms import RegistrationForm, LoginForm
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '31258776c638a3aa4c4cd33912a9aec2'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
-
+bcrypt = Bcrypt(app)
 
 tasks = [
     {
@@ -73,12 +74,12 @@ def register():
         elif db.session.query(User).filter_by(email=form.email.data).first():
             flash('Użytkownik o podanym adresie email już istnieje', 'danger')
         else:
-            user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+            user = User(username=form.username.data, email=form.email.data, password=bcrypt.generate_password_hash(form.password.data).decode('utf-8'))
             #user = User(username="Domini", email="domini@blog.com", password="pass")
             db.session.add(user)
             db.session.commit()
-            flash(f'Account created for {form.username.data}!', 'success')
-            return redirect(url_for('home'))
+            flash(f'Utworzono konto dla użytkownika {form.username.data}! Teraz możesz się zalogować.', 'success')
+            return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -88,11 +89,12 @@ def login():
         #if form.email.data == 'admin@blog.com' and form.password.data == 'password':
         user = db.session.query(User).filter_by(email=form.email.data).first()
         print(user)
-        if user and user.password == form.password.data: 
-            flash('You have been logged in!', 'success')
+        if user and bcrypt.check_password_hash(user.password, form.password.data): 
+            logged_in = True
+            flash('Zalogowano', 'success')
             return redirect(url_for('home'))
         else:
-            flash('Login Unsuccessful. Please check username and password', 'danger')
+            flash('Logowanie nie powiodło się. Sprawdź login i hasło.', 'danger')
     return render_template('login.html', title='Login', form=form)
 
 
