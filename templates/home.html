@@ -6,10 +6,54 @@
             <div class="article-metadata">
               <a class="mr-2" href="#">{{ task.title }}</a>
               <small class="text-muted">{{ task.date }}</small>
+              <div id="countdown"></div>
+
             </div>
             <h2><a class="article-title" href="#">{{ task.title }}</a></h2>
             <p class="article-content">{{ task.description }}</p>
           </div>
         </article>
     {% endfor %}
+
+    <script>
+      // Twój istniejący kod z datą deadline'u
+      const task = {
+        title: "Moje zadanie",
+        date: "2023-06-30"
+      };
+  
+      // Znajdź element licznika
+      const countdownElement = document.getElementById('countdown');
+  
+      // Określ deadline na podstawie daty z Twojego kodu
+      const deadline = new Date(task.date);
+  
+      // Funkcja do aktualizacji licznika
+      function updateCountdown() {
+        // Oblicz pozostały czas do deadline'u
+        const now = new Date();
+        const difference = deadline - now;
+  
+        // Oblicz dni, godziny, minuty i sekundy
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+  
+        // Aktualizuj tekst w elemencie licznika
+        countdownElement.textContent = `${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
+  
+        // Sprawdź, czy deadline minął
+        if (difference < 0) {
+          countdownElement.textContent = 'Deadline minął';
+          // Jeśli chcesz zatrzymać licznik po osiągnięciu deadline'u, możesz użyć clearInterval() tutaj
+        }
+      }
+  
+      // Wywołaj funkcję updateCountdown na początku
+      updateCountdown();
+  
+      // Wywołaj funkcję updateCountdown co sekundę
+      setInterval(updateCountdown, 1000);
+    </script>
 {% endblock content %}
