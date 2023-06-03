@@ -8,16 +8,17 @@ app.config['SECRET_KEY'] = '31258776c638a3aa4c4cd33912a9aec2'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 
+
 tasks = [
     {
         'title': 'Msid projekt',
         'description': 'Analiza danych',
-        'date': '14.06.2023'
+        'deadline': datetime(2023, 6, 3, 10, 13)
     },
     {
         'title': 'Kolokwium linux',
         'description': 'Koncowy test u dr Chudzika',
-        'date': '13.06.2023'
+        'deadline': '13.06.2023'
     }
 ]
 
