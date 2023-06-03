@@ -1,12 +1,16 @@
 {% extends "layout.html" %}
 {% block content %}
+    <script>
+      let countdownElement = null;
+      let deadline = null;
+    </script>
     {% for task in tasks %}
         <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">
               <a class="mr-2" href="#">{{ task.title }}</a>
               <small class="text-muted">{{ task.deadline }}</small>
-              <small id="countdown" class="timer text-muted"> </small>
+              <small id="countdown-{{ task.id }}" class="timer text-muted"> </small>
             </div>
             <h2><a class="article-title" href="#">{{ task.title }}</a></h2>
             <p class="article-content">{{ task.description }}</p>
@@ -20,10 +24,10 @@
         //};
         
         // Znajdź element licznika
-        let countdownElement = document.getElementById('countdown')
-        console.log("task_js");  
+        countdownElement = document.getElementById('countdown-{{ task.id }}')
+        //console.log("task_js");  
         // Określ deadline na podstawie daty z Twojego kodu
-        let deadline = new Date("{{ task.deadline }}");
+        deadline = new Date("{{ task.deadline }}");
         //let deadline = task.deadline
         // Funkcja do aktualizacji licznika
         function updateCountdown() {

@@ -11,11 +11,13 @@ db = SQLAlchemy(app)
 
 tasks = [
     {
+        'id': 1,
         'title': 'Msid projekt',
         'description': 'Analiza danych',
         'deadline': datetime(2023, 6, 3, 12, 0, 0)
     },
     {
+        'id': 2,
         'title': 'Kolokwium linux',
         'description': 'Koncowy test u dr Chudzika',
         'deadline': datetime(2023, 6, 10, 9, 0, 0)
@@ -56,7 +58,7 @@ def hello_name(name):
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html', tasks=tasks)
+    return render_template('home.html', tasks=db.session.query(Task).all())
 
 @app.route("/about")
 def about():
