@@ -35,12 +35,12 @@ class User(db.Model):
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    deadline = db.Column(db.DateTime)
     description = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
-        return f"Task('{self.title}', '{self.date}')"
+        return f"Task('{self.title}', '{self.deadline}')"
 
 
 
@@ -65,15 +65,27 @@ def about():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        flash(f'Account created for {form.username.data}!', 'success')
-        return redirect(url_for('home'))
+        if db.session.query(User).filter_by(username=form.username.data).first():
+            flash('Użytkownik o podanej nazwie już istnieje', 'danger')
+        elif db.session.query(User).filter_by(email=form.email.data).first():
+            flash('Użytkownik o podanym adresie email już istnieje', 'danger')
+        else:
+            user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+            #user = User(username="Domini", email="domini@blog.com", password="pass")
+            db.session.add(user)
+            db.session.commit()
+            flash(f'Account created for {form.username.data}!', 'success')
+            return redirect(url_for('home'))
     return render_template('register.html', title='Register', form=form)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        if form.email.data == 'admin@blog.com' and form.password.data == 'password':
+        #if form.email.data == 'admin@blog.com' and form.password.data == 'password':
+        user = db.session.query(User).filter_by(email=form.email.data).first()
+        print(user)
+        if user and user.password == form.password.data: 
             flash('You have been logged in!', 'success')
             return redirect(url_for('home'))
         else:
