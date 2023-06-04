@@ -159,7 +159,8 @@ def account():
 def new_task():
     form = TaskForm()
     if form.validate_on_submit():
-        task = Task(title=form.title.data, deadline=datetime(2023, 7, 1, 10, 0, 0), description=form.description.data, user_id=current_user.id)
+        task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data, user_id=current_user.id)
+        #datetime.strptime(form.deadline.data, '%Y-%m-%d %H:%M:%S')
         db.session.add(task)
         db.session.commit()
         flash('Zadanie zostało dodane!', 'success')
@@ -181,14 +182,17 @@ def update_task(task_id):
     if form.validate_on_submit():
         task.title = form.title.data
         task.description = form.description.data
+        task.deadline = form.deadline.data
         db.session.commit()
-        flash('Your task has been updated!', 'success')
+        flash('Zaktualizowałeś pomyślnie zadanie!', 'success')
         return redirect(url_for('task', task_id=task.id))
     elif request.method == 'GET':
         form.title.data = task.title
         form.description.data = task.description
-    return render_template('create_task.html', title='Update Task',
-                           form=form, legend='Update Task')
+        form.deadline.data = task.deadline
+        print(task.deadline)
+    return render_template('create_task.html', title='Aktualizuj zadanie',
+                           form=form, legend='Aktualizuj zadanie')
 
 @app.route("/task/<int:task_id>/delete", methods=['POST'])
 @login_required

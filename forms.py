@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed 
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField#, DateTimeField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
-
+from wtforms.fields import DateTimeField
 
 class RegistrationForm(FlaskForm):
     username = StringField('Nazwa użytkownika', validators=[DataRequired(), Length(min=4, max=20)])
@@ -28,4 +28,5 @@ class UpdateAccountForm(FlaskForm):
 class TaskForm(FlaskForm):
     title = StringField('Tytuł', validators=[DataRequired()])
     description = TextAreaField('Opis', validators=[DataRequired()])
+    deadline = DateTimeField('Termin', validators=[DataRequired()], format='%Y-%m-%dT%H:%M')
     submit = SubmitField('Dodaj zadanie')

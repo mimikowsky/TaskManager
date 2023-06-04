@@ -5,11 +5,11 @@
       let deadline = null;
     </script>
     {% for task in tasks %}
-    {% if task.user_id == current_user.id %}
+    <!--{% if task.user_id == current_user.id %} -->
         <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2" href="#">{{ task.title }}</a>
+              <a class="mr-2" href="/task/{{ task.id }}"> Szczegóły </a>
               <small class="text-muted">{{ task.deadline }}</small>
               <small id="countdown-{{ task.id }}" class="timer text-muted"> </small>
             </div>
@@ -19,6 +19,7 @@
         </article>
 
       <script>
+        //console.log("{{ current_user }}");
         // Twój istniejący kod z datą deadline'u
         //let task_js = {
         //  date: "{{ task.deadline }}"
@@ -58,6 +59,6 @@
         // Wywołaj funkcję updateCountdown co sekundę
         setInterval(updateCountdown, 1000);
       </script>
-    {% endif %}
+   <!-- {% endif %} -->
     {% endfor %}
 {% endblock content %}
