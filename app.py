@@ -1,7 +1,7 @@
 import secrets, os
 from PIL import Image
-from flask import Flask, render_template, url_for, redirect, flash, request
-from forms import RegistrationForm, LoginForm, UpdateAccountForm
+from flask import Flask, render_template, url_for, redirect, flash, request, abort
+from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_bcrypt import Bcrypt
@@ -72,7 +72,7 @@ def hello_name(name):
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html', tasks=db.session.query(Task).all())
+    return render_template('home.html', tasks=db.session.query(Task).all(), current_user=current_user)
 
 @app.route("/about")
 def about():
@@ -153,6 +153,54 @@ def account():
 
     image_file = url_for('static', filename=f'profile_pics/{current_user.image_file}')
     return render_template('account.html', title='Account', image_file=image_file, form=form) 
+
+@app.route("/task/new", methods=['GET', 'POST'])
+@login_required
+def new_task():
+    form = TaskForm()
+    if form.validate_on_submit():
+        task = Task(title=form.title.data, deadline=datetime(2023, 7, 1, 10, 0, 0), description=form.description.data, user_id=current_user.id)
+        db.session.add(task)
+        db.session.commit()
+        flash('Zadanie zostało dodane!', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_task.html', title='Nowe zadanie', form=form, legend='Nowe zadanie')
+
+@app.route("/task/<int:task_id>")
+def task(task_id):
+    task = Task.query.get_or_404(task_id)
+    return render_template('task.html', title=task.title, task=task)
+
+@app.route("/task/<int:task_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    if task.author != current_user:
+        abort(403)
+    form = TaskForm()
+    if form.validate_on_submit():
+        task.title = form.title.data
+        task.description = form.description.data
+        db.session.commit()
+        flash('Your task has been updated!', 'success')
+        return redirect(url_for('task', task_id=task.id))
+    elif request.method == 'GET':
+        form.title.data = task.title
+        form.description.data = task.description
+    return render_template('create_task.html', title='Update Task',
+                           form=form, legend='Update Task')
+
+@app.route("/task/<int:task_id>/delete", methods=['POST'])
+@login_required
+def delete_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    if task.author != current_user:
+        abort(403)
+    db.session.delete(task)
+    db.session.commit()
+    flash('Zadanie zostało usunięte!', 'success')
+    return redirect(url_for('home'))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -5,6 +5,7 @@
       let deadline = null;
     </script>
     {% for task in tasks %}
+    {% if task.user_id == current_user.id %}
         <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">
@@ -57,5 +58,6 @@
         // Wywołaj funkcję updateCountdown co sekundę
         setInterval(updateCountdown, 1000);
       </script>
+    {% endif %}
     {% endfor %}
 {% endblock content %}

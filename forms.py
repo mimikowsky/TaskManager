@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed 
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 
 
@@ -24,3 +24,8 @@ class UpdateAccountForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     picture = FileField('Zmień zdjęcie profilowe', validators=[FileAllowed(['jpg', 'png'], message="Akceptowane rozszerzenia: jpg, png")])
     submit = SubmitField('Zaktualizuj')
+
+class TaskForm(FlaskForm):
+    title = StringField('Tytuł', validators=[DataRequired()])
+    description = TextAreaField('Opis', validators=[DataRequired()])
+    submit = SubmitField('Dodaj zadanie')
