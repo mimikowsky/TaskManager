@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-
+from notifications import show_one_hour_left_notification
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '31258776c638a3aa4c4cd33912a9aec2'
@@ -207,6 +207,10 @@ def delete_task(task_id):
     flash('Zadanie zostało usunięte!', 'success')
     return redirect(url_for('home'))
 
+@app.route('/send-notification', methods=['POST'])
+def send_notification():
+    show_one_hour_left_notification()
+    return 'OK'
 
 if __name__ == "__main__":
     app.run(debug=True)

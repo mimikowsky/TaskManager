@@ -3,6 +3,23 @@
     <script>
       let countdownElement = null;
       let deadline = null;
+
+      function sendNotification() {
+        fetch('/send-notification', {
+          method: 'POST'
+        })
+        .then(response => {
+          if (response.ok) {
+            console.log('Powiadomienie wysłane');
+          } else {
+            console.error('Wystąpił błąd podczas wysyłania powiadomienia');
+          }
+        })
+        .catch(error => {
+          console.error('Wystąpił błąd:', error);
+        });
+      }
+
     </script>
     {% for task in tasks %}
       <article class="media content-section">
@@ -18,17 +35,17 @@
       </article>
 
       <script>
-        
         // Funkcja do aktualizacji licznika
         function updateCountdown() {
+          notification_sent = false
           deadline = new Date("{{ task.deadline }}");
           countdownElement = document.getElementById('countdown-{{ task.id }}')
-          console.log(countdownElement);  
+          //console.log(countdownElement);  
           //console.log("{{ task.id }}");
           // Oblicz pozostały czas do deadline'u
           let now = new Date();
           let difference = deadline - now;
-    
+          
           // Oblicz dni, godziny, minuty i sekundy
           let days = Math.floor(difference / (1000 * 60 * 60 * 24));
           let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -38,6 +55,14 @@
           // Aktualizuj tekst w elemencie licznika
           countdownElement.textContent = `Pozostało: ${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
           //console.log(countdownElement.textContent);
+
+          //console.log('{{task}}');
+          //1 godzina do deadline'u
+          if (difference <= 3600000 && difference > 3599000){         
+            sendNotification()
+            console.log("ONE hour left");
+          } 
+          
           // Sprawdź, czy deadline minął
           if (difference < 0) {
             countdownElement.textContent = 'Deadline minął';
