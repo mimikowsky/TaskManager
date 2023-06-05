@@ -7,6 +7,7 @@ from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from notifications import show_one_hour_left_notification
+from task_to_google import add_to_calendar
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '31258776c638a3aa4c4cd33912a9aec2'
@@ -214,6 +215,12 @@ def send_notification():
     task = Task.query.filter_by(id=task_id).first()
     show_one_hour_left_notification(task)
     return 'OK'
+
+@app.route('/calendar')
+def send_to_calendar():
+    if current_user.is_authenticated:
+        add_to_calendar(Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()).first())
+    return redirect(url_for('home'))
 
 if __name__ == "__main__":
     app.run(debug=True)
