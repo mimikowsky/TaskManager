@@ -29,4 +29,4 @@ class TaskForm(FlaskForm):
     title = StringField('Tytuł', validators=[DataRequired()])
     description = TextAreaField('Opis', validators=[DataRequired()])
     deadline = DateTimeField('Termin', validators=[DataRequired()], format='%Y-%m-%dT%H:%M')
-    submit = SubmitField('Dodaj zadanie')
+    submit = SubmitField('Zaktualizuj')

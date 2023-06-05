@@ -187,7 +187,7 @@ def update_task(task_id):
         task.deadline = form.deadline.data
         db.session.commit()
         flash('Zaktualizowałeś pomyślnie zadanie!', 'success')
-        return redirect(url_for('task', task_id=task.id))
+        return redirect(url_for('home'))
     elif request.method == 'GET':
         form.title.data = task.title
         form.description.data = task.description
@@ -209,7 +209,10 @@ def delete_task(task_id):
 
 @app.route('/send-notification', methods=['POST'])
 def send_notification():
-    show_one_hour_left_notification()
+    data = request.json
+    task_id = data.get('task_id')
+    task = Task.query.filter_by(id=task_id).first()
+    show_one_hour_left_notification(task)
     return 'OK'
 
 if __name__ == "__main__":

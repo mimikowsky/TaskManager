@@ -4,9 +4,12 @@
       let countdownElement = null;
       let deadline = null;
 
-      function sendNotification() {
+      function sendNotification(task_id) {
+        const data = {task_id: task_id};
         fetch('/send-notification', {
-          method: 'POST'
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
         })
         .then(response => {
           if (response.ok) {
@@ -59,7 +62,7 @@
           //console.log('{{task}}');
           //1 godzina do deadline'u
           if (difference <= 3600000 && difference > 3599000){         
-            sendNotification()
+            sendNotification('{{ task.id }}')
             console.log("ONE hour left");
           } 
           
