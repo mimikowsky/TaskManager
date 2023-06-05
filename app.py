@@ -72,7 +72,9 @@ def hello_name(name):
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html', tasks=db.session.query(Task).all(), current_user=current_user)
+    if current_user.is_authenticated:
+        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()))
+    return render_template('home.html')
 
 @app.route("/about")
 def about():

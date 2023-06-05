@@ -5,34 +5,26 @@
       let deadline = null;
     </script>
     {% for task in tasks %}
-    <!--{% if task.user_id == current_user.id %} -->
-        <article class="media content-section">
-          <div class="media-body">
-            <div class="article-metadata">
-              <a class="mr-2" href="/task/{{ task.id }}"> Szczegóły </a>
-              <small class="text-muted">{{ task.deadline }}</small>
-              <small id="countdown-{{ task.id }}" class="timer text-muted"> </small>
-            </div>
-            <h2><a class="article-title" href="#">{{ task.title }}</a></h2>
-            <p class="article-content">{{ task.description }}</p>
+      <article class="media content-section">
+        <div class="media-body">
+          <div class="article-metadata">
+            <a class="mr-2" href="/task/{{ task.id }}"> Szczegóły </a>
+            <small class="text-muted">{{ task.deadline }}</small>
+            <small id="countdown-{{ task.id }}" class="timer text-muted"> </small>
           </div>
-        </article>
+          <h2><a class="article-title" href="#">{{ task.title }}</a></h2>
+          <p class="article-content">{{ task.description }}</p>
+        </div>
+      </article>
 
       <script>
-        //console.log("{{ current_user }}");
-        // Twój istniejący kod z datą deadline'u
-        //let task_js = {
-        //  date: "{{ task.deadline }}"
-        //};
         
-        // Znajdź element licznika
-        countdownElement = document.getElementById('countdown-{{ task.id }}')
-        //console.log("task_js");  
-        // Określ deadline na podstawie daty z Twojego kodu
-        deadline = new Date("{{ task.deadline }}");
-        //let deadline = task.deadline
         // Funkcja do aktualizacji licznika
         function updateCountdown() {
+          deadline = new Date("{{ task.deadline }}");
+          countdownElement = document.getElementById('countdown-{{ task.id }}')
+          console.log(countdownElement);  
+          //console.log("{{ task.id }}");
           // Oblicz pozostały czas do deadline'u
           let now = new Date();
           let difference = deadline - now;
@@ -45,7 +37,7 @@
     
           // Aktualizuj tekst w elemencie licznika
           countdownElement.textContent = `Pozostało: ${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
-    
+          //console.log(countdownElement.textContent);
           // Sprawdź, czy deadline minął
           if (difference < 0) {
             countdownElement.textContent = 'Deadline minął';
@@ -59,6 +51,5 @@
         // Wywołaj funkcję updateCountdown co sekundę
         setInterval(updateCountdown, 1000);
       </script>
-   <!-- {% endif %} -->
     {% endfor %}
 {% endblock content %}
