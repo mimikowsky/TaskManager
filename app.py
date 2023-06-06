@@ -216,10 +216,13 @@ def send_notification():
     show_one_hour_left_notification(task)
     return 'OK'
 
-@app.route('/calendar')
-def send_to_calendar():
+@app.route('/<int:task_id>/calendar')
+def send_to_calendar(task_id):
     if current_user.is_authenticated:
-        add_to_calendar(Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()).first())
+        task = Task.query.filter_by(id=task_id).first()
+        if task.author == current_user:
+            add_to_calendar(task)
+
     return redirect(url_for('home'))
 
 if __name__ == "__main__":

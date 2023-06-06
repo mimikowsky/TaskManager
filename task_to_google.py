@@ -16,9 +16,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 
 def add_to_calendar(task=None):
-    """Shows basic usage of the Google Calendar API.
-    Prints the start and name of the next 10 events on the user's calendar.
-    """
+    
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -64,7 +62,7 @@ def create_json(taskObj):
 
     event = {
         'summary': taskObj.title,
-        'location': '800 Howard St., San Francisco, CA 94103',
+        'location': 'Wrocław, Polska',
         'description': taskObj.description,
         'start': {
             "dateTime": start_date_str,
@@ -78,8 +76,7 @@ def create_json(taskObj):
             'RRULE:FREQ=DAILY;COUNT=1'
         ],
         'attendees': [
-            {'email': 'lpage@example.com'},
-            {'email': 'sbrin@example.com'},
+            {'email': taskObj.author.email},
         ],
         'reminders': {
             'useDefault': False,

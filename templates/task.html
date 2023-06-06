@@ -15,6 +15,7 @@
       </div>
       <h2 class="article-title">{{ task.title }}</h2>
       <p class="article-content">{{ task.description }}</p>
+      <a class="btn btn-primary btn-sm btn-to-right" href="{{ url_for('send_to_calendar', task_id=task.id) }}">Dodaj do kalendarza Google</a>
     </div>
   </article>
   <!-- Modal -->
