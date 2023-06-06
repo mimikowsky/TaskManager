@@ -24,73 +24,78 @@
       }
 
     </script>
-    {% for task in tasks %}
-      <article class="media content-section">
-        <div class="media-body">
-          <div class="article-metadata">
-            <a class="mr-2" href="/task/{{ task.id }}"> Szczegóły </a>
-            <small class="text-muted">{{ task.deadline }}</small>
-            <small id="countdown-{{ task.id }}" class="timer text-muted"> </small>
+    {% if tasks.count() == 0 %}
+      <h4>Nie masz żadnych zadań. Możesz odpocząć lub utworzyć zadanie.</h4>
+      <div class="center"><a class="btn btn-success" href="{{ url_for('new_task') }}">Dodaj zadanie</a></div>
+    {% else %}
+      {% for task in tasks %}
+        <article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+              <a class="mr-2" href="/task/{{ task.id }}"> Szczegóły </a>
+              <small class="text-muted">{{ task.deadline }}</small>
+              <small id="countdown-{{ task.id }}" class="timer text-muted"> </small>
+            </div>
+            <h2><a class="article-title" href="/task/{{ task.id }}">{{ task.title }}</a></h2>
+            <p class="article-content">{{ task.description }}</p>
           </div>
-          <h2><a class="article-title" href="/task/{{ task.id }}">{{ task.title }}</a></h2>
-          <p class="article-content">{{ task.description }}</p>
-        </div>
-      </article>
+        </article>
 
-      <script>
-        // Funkcja do aktualizacji licznika
-        function updateCountdown() {
-          notification_sent = false
-          deadline = new Date("{{ task.deadline }}");
-          countdownElement = document.getElementById('countdown-{{ task.id }}')
-          //console.log(countdownElement);  
-          //console.log("{{ task.id }}");
-          // Oblicz pozostały czas do deadline'u
-          let now = new Date();
-          let difference = deadline - now;
-          
-          // Oblicz dni, godziny, minuty i sekundy
-          let days = Math.floor(difference / (1000 * 60 * 60 * 24));
-          let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-          let seconds = Math.floor((difference % (1000 * 60)) / 1000);
-    
-          // Aktualizuj tekst w elemencie licznika
-          countdownElement.textContent = `Pozostało: ${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
-          //console.log(countdownElement.textContent);
-
-          //deadline
-          if (difference <= 0 && difference > -1000 && "{{ task.deadline_reminder }}"){
-              sendNotification('{{ task.id }}', 0)
-          }
-
-          //1 godzina do deadline'u
-          else if (difference <= 3600000 && difference > 3599000 && "{{ task.one_hour_reminder }}"){         
-            sendNotification('{{ task.id }}', 1)
-            console.log("ONE hour left");
-          } 
-
-          //1 dzień do deadline'u
-          else if (difference <= 86400000 && difference > 86399000) {
-            console.log(difference)
-            sendNotification('{{ task.id }}', 2)
-          }
-        
-          // Sprawdź, czy deadline minął
-          if (difference <= 0) {
-            countdownElement.textContent = 'Deadline minął';
-            // Jeśli chcesz zatrzymać licznik po osiągnięciu deadline'u, możesz użyć clearInterval() tutaj
-            clearInterval()
+        <script>
+          // Funkcja do aktualizacji licznika
+          function updateCountdown() {
+            notification_sent = false
+            deadline = new Date("{{ task.deadline }}");
+            countdownElement = document.getElementById('countdown-{{ task.id }}')
+            //console.log(countdownElement);  
+            //console.log("{{ task.id }}");
+            // Oblicz pozostały czas do deadline'u
+            let now = new Date();
+            let difference = deadline - now;
             
+            // Oblicz dni, godziny, minuty i sekundy
+            let days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      
+            // Aktualizuj tekst w elemencie licznika
+            countdownElement.textContent = `Pozostało: ${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
+            //console.log(countdownElement.textContent);
+
+            //deadline
+            if (difference <= 0 && difference > -1000 && "{{ task.deadline_reminder }}"){
+                sendNotification('{{ task.id }}', 0)
+            }
+
+            //1 godzina do deadline'u
+            else if (difference <= 3600000 && difference > 3599000 && "{{ task.one_hour_reminder }}"){         
+              sendNotification('{{ task.id }}', 1)
+              console.log("ONE hour left");
+            } 
+
+            //1 dzień do deadline'u
+            else if (difference <= 86400000 && difference > 86399000) {
+              console.log(difference)
+              sendNotification('{{ task.id }}', 2)
+            }
+          
+            // Sprawdź, czy deadline minął
+            if (difference <= 0) {
+              countdownElement.textContent = 'Deadline minął';
+              // Jeśli chcesz zatrzymać licznik po osiągnięciu deadline'u, możesz użyć clearInterval() tutaj
+              clearInterval()
+              
+            }
           }
-        }
-    
-        // Wywołaj funkcję updateCountdown na początku
-        updateCountdown();
-    
-        // Wywołaj funkcję updateCountdown co sekundę
-        setInterval(updateCountdown, 1000);
-      </script>
-    {% endfor %}
+      
+          // Wywołaj funkcję updateCountdown na początku
+          updateCountdown();
+      
+          // Wywołaj funkcję updateCountdown co sekundę
+          setInterval(updateCountdown, 1000);
+        </script>
+      {% endfor %}
+    {% endif %}
 
 {% endblock content %}

@@ -4,6 +4,10 @@ body {
     margin-top: 5rem;
   }
   
+  a {
+    display: block;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     color: #444444;
   }
@@ -183,4 +187,17 @@ body {
 
   .days li.active::before{
     background-color: #416042;
+  }
+
+  .btn-success{
+    background-color: #a7d49e;
+    color:#151616;
+    border-color: #a7d49e;
+  }
+
+  .center{
+    margin-top: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }

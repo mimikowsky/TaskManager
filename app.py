@@ -195,7 +195,7 @@ def update_task(task_id):
         task.one_hour_reminder = form.one_hour_reminder.data
         task.one_day_reminder = form.one_day_reminder.data
         db.session.commit()
-        flash('Zaktualizowałeś pomyślnie zadanie!', 'success')
+        flash('Zadanie zaktualizowano pomyślnie!', 'success')
         return redirect(url_for('home'))
     elif request.method == 'GET':
         form.title.data = task.title
