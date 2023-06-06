@@ -29,4 +29,7 @@ class TaskForm(FlaskForm):
     title = StringField('Tytuł', validators=[DataRequired()])
     description = TextAreaField('Opis', validators=[DataRequired()])
     deadline = DateTimeField('Termin', validators=[DataRequired()], format='%Y-%m-%dT%H:%M')
-    submit = SubmitField('Zaktualizuj')
+    deadline_reminder = BooleanField('O godzinie terminu')
+    one_hour_reminder = BooleanField('Godzinę przed')
+    one_day_reminder = BooleanField('Dzień przed')
+    submit = SubmitField('Zatwierdź')

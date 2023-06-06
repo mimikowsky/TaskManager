@@ -46,6 +46,19 @@
                     {{ form.deadline(class="form-control", type="datetime-local") }}
                 {% endif %}
             </div>
+            Wyślij powiadomienie push: <br>
+            <div class="form-check">
+                {{ form.deadline_reminder(class="form-check-input") }}
+                {{ form.deadline_reminder.label(class="form-check-label") }}
+            </div>
+            <div class="form-check">
+                {{ form.one_hour_reminder(class="form-check-input") }}
+                {{ form.one_hour_reminder.label(class="form-check-label") }}
+            </div>
+            <div class="form-check">
+                {{ form.one_day_reminder(class="form-check-input") }}
+                {{ form.one_day_reminder.label(class="form-check-label") }}
+            </div>
         </fieldset>
         <div class="form-group">
             {{ form.submit(class="btn btn-outline-info") }}

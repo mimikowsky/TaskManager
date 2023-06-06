@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from notifications import show_one_hour_left_notification
+from notifications import show_notification
 from task_to_google import add_to_calendar
 
 app = Flask(__name__)
@@ -55,6 +55,9 @@ class Task(db.Model):
     title = db.Column(db.String(100), nullable=False)
     deadline = db.Column(db.DateTime)
     description = db.Column(db.Text, nullable=False)
+    deadline_reminder = db.Column(db.Boolean, nullable=False)
+    one_hour_reminder = db.Column(db.Boolean, nullable=False)
+    one_day_reminder = db.Column(db.Boolean, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
@@ -75,7 +78,7 @@ def hello_name(name):
 def home():
     if current_user.is_authenticated:
         return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()))
-    return render_template('home.html')
+    return redirect(url_for('login'))
 
 @app.route("/about")
 def about():
@@ -96,7 +99,7 @@ def register():
             #user = User(username="Domini", email="domini@blog.com", password="pass")
             db.session.add(user)
             db.session.commit()
-            flash(f'Utworzono konto dla użytkownika {form.username.data}! Teraz możesz się zalogować.', 'success')
+            flash(f'Utworzono konto dla użytkownika {form.username.data}!', 'success')
             return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -162,7 +165,9 @@ def account():
 def new_task():
     form = TaskForm()
     if form.validate_on_submit():
-        task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data, user_id=current_user.id)
+        task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data,
+                    deadline_reminder=form.deadline_reminder.data, one_hour_reminder=form.one_hour_reminder.data,
+                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id)
         #datetime.strptime(form.deadline.data, '%Y-%m-%d %H:%M:%S')
         db.session.add(task)
         db.session.commit()
@@ -186,6 +191,9 @@ def update_task(task_id):
         task.title = form.title.data
         task.description = form.description.data
         task.deadline = form.deadline.data
+        task.deadline_reminder = form.deadline_reminder.data
+        task.one_hour_reminder = form.one_hour_reminder.data
+        task.one_day_reminder = form.one_day_reminder.data
         db.session.commit()
         flash('Zaktualizowałeś pomyślnie zadanie!', 'success')
         return redirect(url_for('home'))
@@ -193,6 +201,9 @@ def update_task(task_id):
         form.title.data = task.title
         form.description.data = task.description
         form.deadline.data = task.deadline
+        form.deadline_reminder.data = task.deadline_reminder
+        form.one_hour_reminder.data = task.one_hour_reminder
+        form.one_day_reminder.data = task.one_day_reminder
         print(task.deadline)
     return render_template('create_task.html', title='Aktualizuj zadanie',
                            form=form, legend='Aktualizuj zadanie')
@@ -212,8 +223,15 @@ def delete_task(task_id):
 def send_notification():
     data = request.json
     task_id = data.get('task_id')
+    notification_number = int(data.get('notification_number'))
     task = Task.query.filter_by(id=task_id).first()
-    show_one_hour_left_notification(task)
+    if notification_number == 0:
+        show_notification(task, f"{task.title}", f"Upłynął termin: {task.title}")
+    elif notification_number == 1:
+        show_notification(task, "Została godzina!", f"Została godzina do upływu terminu: {task.title}")
+    elif notification_number == 2:
+        show_notification(task, "Zostały 24 godziny!", f"Zostały 24 godziny do upływu terminu: {task.title}")
+
     return 'OK'
 
 @app.route('/calendar')

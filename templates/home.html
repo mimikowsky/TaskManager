@@ -4,8 +4,8 @@
       let countdownElement = null;
       let deadline = null;
 
-      function sendNotification(task_id) {
-        const data = {task_id: task_id};
+      function sendNotification(task_id, notification_number) {
+        const data = {task_id: task_id, notification_number: notification_number};
         fetch('/send-notification', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -59,17 +59,29 @@
           countdownElement.textContent = `Pozostało: ${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
           //console.log(countdownElement.textContent);
 
-          //console.log('{{task}}');
+          //deadline
+          if (difference <= 0 && difference > -1000 && "{{ task.deadline_reminder }}"){
+              sendNotification('{{ task.id }}', 0)
+          }
+
           //1 godzina do deadline'u
-          if (difference <= 3600000 && difference > 3599000){         
-            sendNotification('{{ task.id }}')
+          else if (difference <= 3600000 && difference > 3599000 && "{{ task.one_hour_reminder }}"){         
+            sendNotification('{{ task.id }}', 1)
             console.log("ONE hour left");
           } 
-          
+
+          //1 dzień do deadline'u
+          else if (difference <= 86400000 && difference > 86399000) {
+            console.log(difference)
+            sendNotification('{{ task.id }}', 2)
+          }
+        
           // Sprawdź, czy deadline minął
-          if (difference < 0) {
+          if (difference <= 0) {
             countdownElement.textContent = 'Deadline minął';
             // Jeśli chcesz zatrzymać licznik po osiągnięciu deadline'u, możesz użyć clearInterval() tutaj
+            clearInterval()
+            
           }
         }
     
@@ -80,4 +92,5 @@
         setInterval(updateCountdown, 1000);
       </script>
     {% endfor %}
+
 {% endblock content %}
