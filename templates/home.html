@@ -32,7 +32,7 @@
             <small class="text-muted">{{ task.deadline }}</small>
             <small id="countdown-{{ task.id }}" class="timer text-muted"> </small>
           </div>
-          <h2><a class="article-title" href="#">{{ task.title }}</a></h2>
+          <h2><a class="article-title" href="/task/{{ task.id }}">{{ task.title }}</a></h2>
           <p class="article-content">{{ task.description }}</p>
         </div>
       </article>

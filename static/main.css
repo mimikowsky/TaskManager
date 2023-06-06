@@ -9,7 +9,7 @@ body {
   }
   
   .bg-steel {
-    background-color: #e6c979;
+    background-color: #a7d49e;
   }
   
   .site-header .navbar-nav .nav-link {
@@ -29,6 +29,7 @@ body {
     padding: 10px 20px;
     border: 1px solid #dddddd;
     border-radius: 3px;
+    border-color: #a7d49e;
     margin-bottom: 20px;
   }
   
@@ -81,4 +82,105 @@ body {
 
   .timer, .btn-to-right{
     float: right;
+  }
+  
+  .wrapper {
+    background-color: #a7d49e;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 400px;
+    margin-bottom: 40px;
+  }
+
+  .wrapper header {
+    display: flex;
+    align-items: center;
+    padding: 25px 30px 10px;
+    justify-content: space-between;
+  }
+
+  header .current-date{
+    font-size: 1.45rem;
+    font-weight: 500;
+  }
+
+  header .icons span{
+    height: 38px;
+    width: 38px;
+    margin: -15px 1px;
+    text-align: center;
+    line-height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.7rem;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+  }
+
+  header .icons span:hover{
+    background-color:#a6c38d
+  }
+
+  header .icons span:last-child {
+    margin-right: -10px;
+  }
+
+  .calendar {
+    padding-right: 35px;
+    padding-bottom: 35px;
+  }
+
+  .calendar ul{
+    display: flex;
+    list-style: none;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+
+  .calendar .days {
+    margin-bottom: 10px;
+  }
+
+  .calendar .weeks li {
+    font-weight: 500;
+  }
+
+  .calendar ul li{
+    position: relative;
+    width: calc(100% / 7);
+  }
+
+  .calendar .days li {
+    margin-top: 30px;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .days li.inactive{
+    color: #8d8b8b;
+  }
+
+  .days li.active{
+    color: #fff;
+  }
+
+  .calendar .days li::before {
+    position: absolute;
+    content: "";
+    height: 40px;
+    width: 40px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    z-index: -1;
+  }
+
+  .calendar .days li:hover::before {
+    background-color: #a6c38d;
+  }
+
+  .days li.active::before{
+    background-color: #416042;
   }
