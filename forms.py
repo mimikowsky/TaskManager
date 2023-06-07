@@ -33,3 +33,12 @@ class TaskForm(FlaskForm):
     one_hour_reminder = BooleanField('Godzinę przed')
     one_day_reminder = BooleanField('Dzień przed')
     submit = SubmitField('Zatwierdź')
+
+class RequestResetForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Wyślij maila z linkiem do strony zmiany hasła')
+  
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Hasło', validators=[DataRequired(), Length(min=4)])
+    confirm_password = PasswordField('Potwierdź hasło', validators=[DataRequired(), EqualTo('password', message="Hasła różnią się.")])
+    submit = SubmitField('Zmień hasło')

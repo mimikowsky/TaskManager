@@ -1,8 +1,9 @@
 import secrets, os
 from PIL import Image
 from flask import Flask, render_template, url_for, redirect, flash, request, abort, jsonify
-from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm
+from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm, RequestResetForm, ResetPasswordForm
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message
 from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
@@ -10,6 +11,7 @@ from notifications import show_notification
 from task_to_google import add_to_calendar
 import sys
 from datetime import datetime
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '31258776c638a3aa4c4cd33912a9aec2'
@@ -20,6 +22,12 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = "Musisz się zalogować, aby skorzystać z tej funkcjonalności"
 login_manager.login_message_category = 'info'
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'taskmanagerdk@gmail.com'
+app.config['MAIL_PASSWORD'] = 'ioyujmjziljlbmfe'
+mail = Mail(app)
 
 tasks = [
     {
@@ -50,6 +58,19 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
+    
+    def get_reset_token(self, expires_sec=18000):
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        return s.dumps({'user_id': self.id}).decode('utf-8')
+    
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
     
 
 class Task(db.Model):
@@ -249,7 +270,6 @@ def send_notification():
 
     return 'OK'
 
-
 @app.route('/<int:task_id>/calendar')
 def send_to_calendar(task_id):
     if current_user.is_authenticated:
@@ -258,6 +278,45 @@ def send_to_calendar(task_id):
             add_to_calendar(task)
 
     return redirect(url_for('home'))
+
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Zmiana hasła TaskManager', sender="taskmanager@gmail.com", recipients=[user.email])
+    msg.body = f'''Aby zmienić hasło, kliknij link: {url_for('reset_token', token=token, _external=True)} 
+Jeżeli nie prosiłeś o wysłanie tego maila, po prostu zignoruj tego maila.
+Żadne zmiany nie zostaną dokonane'''
+
+@app.route("/reset_password", methods = ['GET', 'POST'])
+def reset_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = RequestResetForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user == None:
+            flash('Użytkownik o podanym adresie email nie istnieje', 'warning')
+        else: 
+            send_reset_email(user)
+            flash('Wysłano maila z linkiem do strony zmiana hasła.', 'info')
+            return redirect(url_for('login'))
+    return render_template('reset_request.html', title='Resetuj hasło', form=form)
+
+@app.route("/reset_password/<token>", methods = ['GET', 'POST'])
+def reset_token(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    user = User.verify_reset_token(token)
+    if user is None:
+        flash('Ten link jest już nieważny. Linki zmiany hasła ważne są przez 30 minut. Wygeneruj nowy.', 'warning')
+        return redirect(url_for('reset_request'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data)
+        user.password = hashed_password
+        db.session.commit()
+        flash(f'Hasło zostało zmienione. Możesz teraz się zalogować.', 'success')
+        return redirect(url_for('login'))
+    return render_template('reset_token.html', title='Resetuj hasło', form=form)
 
 if __name__ == "__main__":
     app.run(debug=True)
