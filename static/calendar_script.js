@@ -38,9 +38,9 @@ const renderCalendar = () => {
 days.forEach(day => {
     day.addEventListener("click", () => {
         console.log(day, "clicked", currMonth);
-        let currMonth_binary = currMonth;
-        if (currMonth - 9 <= 0){
-            currMonth_binary = "0"+(currMonth+1);
+        let currMonth_binary = currMonth+1;
+        if (currMonth_binary - 9 <= 0){
+            currMonth_binary = "0"+(currMonth_binary);
         }
         window.location.href = `/task/new?deadline=${currYear}-${currMonth_binary}-${day.textContent}`;
         /*const data = {year: currYear, month: currMonth, day: day.textContent};

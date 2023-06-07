@@ -167,8 +167,12 @@ def account():
 def new_task():
     deadline = request.args.get('deadline')
     try:
-        deadline_dt = datetime(int(deadline[:4]), int(deadline[6:7]), int(deadline[8:]), 12, 0)
-        print(deadline[:4], deadline[6:7], deadline[8:], file=sys.stderr)
+        print(deadline[:4], deadline[5:7], deadline[8:], file=sys.stderr)
+        month = deadline[5:7]
+        if month[0] == "0":
+            month = month[1]
+        deadline_dt = datetime(int(deadline[:4]), int(month), int(deadline[8:]), 12, 0)
+        
     except:
         pass
     form = TaskForm()
