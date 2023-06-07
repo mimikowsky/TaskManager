@@ -32,8 +32,39 @@ const renderCalendar = () => {
 
     currentDate.innerText = `${months[currMonth]} ${currYear}`;
     daysTag.innerHTML = liTag;
+
+    days = document.querySelectorAll(".days li")
+
+days.forEach(day => {
+    day.addEventListener("click", () => {
+        console.log(day, "clicked", currMonth);
+        let currMonth_binary = currMonth;
+        if (currMonth - 9 <= 0){
+            currMonth_binary = "0"+(currMonth+1);
+        }
+        window.location.href = `/task/new?deadline=${currYear}-${currMonth_binary}-${day.textContent}`;
+        /*const data = {year: currYear, month: currMonth, day: day.textContent};
+        fetch('/add-task-cal', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+              console.log('Data wprowadzona');
+            } else {
+              console.error('Wystąpił błąd podczas wprowadzania daty');
+            }
+          })
+          .catch(error => {
+            console.error('Wystąpił błąd:', error);
+          });*/
+    })
+});
+
 }
 renderCalendar();
+
 
 prevNextIcon.forEach(icon => {
     icon.addEventListener("click", () => {

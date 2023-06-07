@@ -1,6 +1,6 @@
 import secrets, os
 from PIL import Image
-from flask import Flask, render_template, url_for, redirect, flash, request, abort
+from flask import Flask, render_template, url_for, redirect, flash, request, abort, jsonify
 from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -8,6 +8,8 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from notifications import show_notification
 from task_to_google import add_to_calendar
+import sys
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '31258776c638a3aa4c4cd33912a9aec2'
@@ -163,7 +165,15 @@ def account():
 @app.route("/task/new", methods=['GET', 'POST'])
 @login_required
 def new_task():
+    deadline = request.args.get('deadline')
+    try:
+        deadline_dt = datetime(int(deadline[:4]), int(deadline[6:7]), int(deadline[8:]), 12, 0)
+        print(deadline[:4], deadline[6:7], deadline[8:], file=sys.stderr)
+    except:
+        pass
     form = TaskForm()
+    if deadline != None:
+        form.deadline.data = deadline_dt
     if form.validate_on_submit():
         task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data,
                     deadline_reminder=form.deadline_reminder.data, one_hour_reminder=form.one_hour_reminder.data,
@@ -173,6 +183,7 @@ def new_task():
         db.session.commit()
         flash('Zadanie zostało dodane!', 'success')
         return redirect(url_for('home'))
+
     return render_template('create_task.html', title='Nowe zadanie', form=form, legend='Nowe zadanie')
 
 @app.route("/task/<int:task_id>")
@@ -233,6 +244,7 @@ def send_notification():
         show_notification(task, "Zostały 24 godziny!", f"Zostały 24 godziny do upływu terminu: {task.title}")
 
     return 'OK'
+
 
 @app.route('/<int:task_id>/calendar')
 def send_to_calendar(task_id):

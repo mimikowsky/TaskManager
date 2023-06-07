@@ -135,6 +135,11 @@ body {
     padding-bottom: 35px;
   }
 
+  .calendar a{
+    text-decoration: none;
+    color: #151616;
+  }
+
   .calendar ul{
     display: flex;
     list-style: none;
