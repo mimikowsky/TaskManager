@@ -22,9 +22,10 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = "Musisz się zalogować, aby skorzystać z tej funkcjonalności"
 login_manager.login_message_category = 'info'
-app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'taskmanagerdk@gmail.com'
 app.config['MAIL_PASSWORD'] = 'ioyujmjziljlbmfe'
 mail = Mail(app)
@@ -285,6 +286,7 @@ def send_reset_email(user):
     msg.body = f'''Aby zmienić hasło, kliknij link: {url_for('reset_token', token=token, _external=True)} 
 Jeżeli nie prosiłeś o wysłanie tego maila, po prostu zignoruj tego maila.
 Żadne zmiany nie zostaną dokonane'''
+    mail.send(msg)
 
 @app.route("/reset_password", methods = ['GET', 'POST'])
 def reset_request():
