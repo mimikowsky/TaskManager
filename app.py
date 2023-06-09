@@ -56,6 +56,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(60), nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     tasks = db.relationship('Task', backref='author', lazy=True)
+    categories = db.relationship('Category', backref='owner', lazy=True)
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
@@ -83,11 +84,21 @@ class Task(db.Model):
     one_hour_reminder = db.Column(db.Boolean, nullable=False)
     one_day_reminder = db.Column(db.Boolean, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    category = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
 
     def __repr__(self):
         return f"Task('{self.title}', '{self.deadline}')"
 
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    tasks = db.relationship('Task', backref='type', lazy=True)
 
+
+    def __repr__(self):
+        return f"Category {self.name}"
+    
 
 @app.route("/hello")
 def hello_world():
@@ -201,16 +212,17 @@ def new_task():
     if deadline != None:
         form.deadline.data = deadline_dt
     if form.validate_on_submit():
+        print(form.category.data)
         task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data,
                     deadline_reminder=form.deadline_reminder.data, one_hour_reminder=form.one_hour_reminder.data,
-                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id)
+                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id, category=form.category.data)
         #datetime.strptime(form.deadline.data, '%Y-%m-%d %H:%M:%S')
         db.session.add(task)
         db.session.commit()
         flash('Zadanie zostało dodane!', 'success')
         return redirect(url_for('home'))
 
-    return render_template('create_task.html', title='Nowe zadanie', form=form, legend='Nowe zadanie')
+    return render_template('create_task.html', title='Nowe zadanie', form=form, legend='Nowe zadanie', categories=Category.query.filter_by(user_id=current_user.id))
 
 @app.route("/task/<int:task_id>")
 def task(task_id):

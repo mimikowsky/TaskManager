@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed 
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField#, DateTimeField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from wtforms.fields import DateTimeField
 
@@ -32,6 +32,7 @@ class TaskForm(FlaskForm):
     deadline_reminder = BooleanField('O godzinie terminu')
     one_hour_reminder = BooleanField('Godzinę przed')
     one_day_reminder = BooleanField('Dzień przed')
+    category = IntegerField("Kategoria")
     submit = SubmitField('Zatwierdź')
 
 class RequestResetForm(FlaskForm):

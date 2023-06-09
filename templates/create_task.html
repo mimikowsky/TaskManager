@@ -59,6 +59,18 @@
                 {{ form.one_day_reminder(class="form-check-input") }}
                 {{ form.one_day_reminder.label(class="form-check-label") }}
             </div>
+        
+            <div>
+                <br>
+                <select class="form-select" aria-label="Default select example">
+                    <option selected>Wybierz kategorię</option>
+                    {% for category in categories %}
+                    <option value="1">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+            </div>
+
         </fieldset>
         <div class="form-group">
             {{ form.submit(class="btn btn-success") }}
