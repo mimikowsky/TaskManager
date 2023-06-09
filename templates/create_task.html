@@ -62,8 +62,13 @@
         
             <div>
                 <br>
-                <select class="form-select" aria-label="Default select example">
-                    <option selected>Wybierz kategorię</option>
+                {% if form.category.errors %}
+                <div class="invalid-feedback">
+                        <span> Wybierz kategorię! </span>
+                </div>
+                {% endif %}
+                <select class="form-select" name="selected_category" aria-label="Default select example">
+                    <option selected value="0">Wybierz kategorię</option>
                     {% for category in categories %}
                     <option value="1">{{ category.name }}</option>
                     {% endfor %}

@@ -212,10 +212,12 @@ def new_task():
     if deadline != None:
         form.deadline.data = deadline_dt
     if form.validate_on_submit():
-        print(form.category.data)
+        #print(form.category.data)
+        selected_category = request.form.get('selected_category')
+        print(selected_category)
         task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data,
                     deadline_reminder=form.deadline_reminder.data, one_hour_reminder=form.one_hour_reminder.data,
-                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id, category=form.category.data)
+                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id, category=selected_category)
         #datetime.strptime(form.deadline.data, '%Y-%m-%d %H:%M:%S')
         db.session.add(task)
         db.session.commit()
