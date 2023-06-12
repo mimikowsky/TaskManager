@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block content %}
+<form method="POST" action="{{ url_for('create_category') }}">
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+
+    <div class="form-group">
+        {{ form.name.label(class="form-control-label") }}
+        {% if form.name.errors %}
+            {{ form.name(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+                {% for error in form.name.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% else %}
+            {{ form.name(class="form-control form-control-lg") }}
+        {% endif %}
+    </div>
+    </fieldset>
+
+    <div class="form-group">
+        {{ form.submit(class="btn btn-success") }}
+    </div>
+</form>
+
+
+{% endblock content %}

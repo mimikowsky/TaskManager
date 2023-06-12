@@ -1,7 +1,7 @@
 import secrets, os
 from PIL import Image
 from flask import Flask, render_template, url_for, redirect, flash, request, abort, jsonify
-from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm, RequestResetForm, ResetPasswordForm
+from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm, RequestResetForm, ResetPasswordForm, CategoryForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from datetime import datetime
@@ -214,7 +214,7 @@ def new_task():
     if form.validate_on_submit():
         #print(form.category.data)
         selected_category = request.form.get('selected_category')
-        print(selected_category)
+        #print(selected_category)
         task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data,
                     deadline_reminder=form.deadline_reminder.data, one_hour_reminder=form.one_hour_reminder.data,
                     one_day_reminder=form.one_day_reminder.data, user_id=current_user.id, category=selected_category)
@@ -245,6 +245,8 @@ def update_task(task_id):
         task.deadline_reminder = form.deadline_reminder.data
         task.one_hour_reminder = form.one_hour_reminder.data
         task.one_day_reminder = form.one_day_reminder.data
+        task.category = request.form.get('selected_category')
+        # to do
         db.session.commit()
         flash('Zadanie zaktualizowano pomyślnie!', 'success')
         return redirect(url_for('home'))
@@ -255,9 +257,8 @@ def update_task(task_id):
         form.deadline_reminder.data = task.deadline_reminder
         form.one_hour_reminder.data = task.one_hour_reminder
         form.one_day_reminder.data = task.one_day_reminder
-        print(task.deadline)
     return render_template('create_task.html', title='Aktualizuj zadanie',
-                           form=form, legend='Aktualizuj zadanie')
+                           form=form, legend='Aktualizuj zadanie', categories=Category.query.filter_by(user_id=current_user.id))
 
 @app.route("/task/<int:task_id>/delete", methods=['POST'])
 @login_required
@@ -333,6 +334,27 @@ def reset_token(token):
         flash(f'Hasło zostało zmienione. Możesz teraz się zalogować.', 'success')
         return redirect(url_for('login'))
     return render_template('reset_token.html', title='Resetuj hasło', form=form)
+
+@app.route("/create_category", methods = ['GET', 'POST'])
+@login_required
+def create_category():
+
+    form = CategoryForm()
+
+    if form.validate_on_submit():
+        #categories=Category.query.filter_by(name=form.name.data)
+        if db.session.query(Category).filter_by(name=form.name.data, user_id=current_user.id).first() is not None:
+            flash('Kategoria o tej nazwie juz istnieje!', 'warning')
+        else:
+            category = Category(name=form.name.data, user_id=current_user.id)
+            db.session.add(category)
+            db.session.commit()
+            flash('Kategoria została dodana!', 'success')
+
+        return redirect(url_for('home'))
+    return render_template("create_category.html", form=form)
+    
+
 
 if __name__ == "__main__":
     app.run(debug=True)

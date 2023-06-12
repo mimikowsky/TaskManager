@@ -43,3 +43,7 @@ class ResetPasswordForm(FlaskForm):
     password = PasswordField('Hasło', validators=[DataRequired(), Length(min=4)])
     confirm_password = PasswordField('Potwierdź hasło', validators=[DataRequired(), EqualTo('password', message="Hasła różnią się.")])
     submit = SubmitField('Zmień hasło')
+
+class CategoryForm(FlaskForm):
+    name = StringField('Stwórz kategorię')
+    submit = SubmitField('Dodaj')
