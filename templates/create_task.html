@@ -60,20 +60,21 @@
                 {{ form.one_day_reminder.label(class="form-check-label") }}
             </div>
         
-            <div>
-                <br>
+            <br>
+            <div class="form-group grid-container">
+                {{ form.category.label(class="form-control-label") }}
                 {% if form.category.errors %}
-                <div class="invalid-feedback">
-                        <span> Wybierz kategorię! </span>
-                </div>
+                    {{ form.category(class="form-select is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.category.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="grid-item">
+                        {{ form.category(class="form-select") }}
+                    </div>
                 {% endif %}
-                <select class="form-select" name="selected_category" aria-label="Default select example">
-                    <option selected value="0">Wybierz kategorię</option>
-                    {% for category in categories %}
-                    <option value="1">{{ category.name }}</option>
-                    {% endfor %}
-                </select>
-                <br>
             </div>
 
         </fieldset>

@@ -85,6 +85,7 @@ class Task(db.Model):
     one_day_reminder = db.Column(db.Boolean, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     category = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    
 
     def __repr__(self):
         return f"Task('{self.title}', '{self.deadline}')"
@@ -112,7 +113,7 @@ def hello_name(name):
 @app.route("/home")
 def home():
     if current_user.is_authenticated:
-        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()))
+        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()), get_task_name=get_task_name)
     return redirect(url_for('login'))
 
 @app.route("/about")
@@ -135,6 +136,8 @@ def register():
             db.session.add(user)
             db.session.commit()
             flash(f'Utworzono konto dla użytkownika {form.username.data}!', 'success')
+            
+            initilize_categories_for_user(user)
             return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -209,21 +212,24 @@ def new_task():
     except:
         pass
     form = TaskForm()
+
+    categs = Category.query.filter_by(user_id=current_user.id).all()
+    choices = [(category.id, category.name) for category in categs]
+    form.category.choices = choices
+
     if deadline != None:
         form.deadline.data = deadline_dt
+        
     if form.validate_on_submit():
-        #print(form.category.data)
-        selected_category = request.form.get('selected_category')
-        #print(selected_category)
         task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data,
                     deadline_reminder=form.deadline_reminder.data, one_hour_reminder=form.one_hour_reminder.data,
-                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id, category=selected_category)
+                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id, category=form.category.data)
         #datetime.strptime(form.deadline.data, '%Y-%m-%d %H:%M:%S')
         db.session.add(task)
         db.session.commit()
         flash('Zadanie zostało dodane!', 'success')
         return redirect(url_for('home'))
-
+   
     return render_template('create_task.html', title='Nowe zadanie', form=form, legend='Nowe zadanie', categories=Category.query.filter_by(user_id=current_user.id))
 
 @app.route("/task/<int:task_id>")
@@ -238,6 +244,11 @@ def update_task(task_id):
     if task.author != current_user:
         abort(403)
     form = TaskForm()
+    
+    categs = Category.query.filter_by(user_id=current_user.id).all()
+    choices = [(category.id, category.name) for category in categs]
+    form.category.choices = choices
+
     if form.validate_on_submit():
         task.title = form.title.data
         task.description = form.description.data
@@ -245,8 +256,7 @@ def update_task(task_id):
         task.deadline_reminder = form.deadline_reminder.data
         task.one_hour_reminder = form.one_hour_reminder.data
         task.one_day_reminder = form.one_day_reminder.data
-        task.category = request.form.get('selected_category')
-        # to do
+        task.category = form.category.data
         db.session.commit()
         flash('Zadanie zaktualizowano pomyślnie!', 'success')
         return redirect(url_for('home'))
@@ -257,6 +267,7 @@ def update_task(task_id):
         form.deadline_reminder.data = task.deadline_reminder
         form.one_hour_reminder.data = task.one_hour_reminder
         form.one_day_reminder.data = task.one_day_reminder
+        form.category.data = task.category
     return render_template('create_task.html', title='Aktualizuj zadanie',
                            form=form, legend='Aktualizuj zadanie', categories=Category.query.filter_by(user_id=current_user.id))
 
@@ -354,6 +365,25 @@ def create_category():
         return redirect(url_for('home'))
     return render_template("create_category.html", form=form)
     
+def get_task_name(id):
+    cat = db.session.query(Category).filter_by(id = id).first()
+    try:
+        name = cat.name
+    except:
+        name = "Brak"
+    return name
+
+
+def initilize_categories_for_user(user):
+    """ only use for new registered user (so with no categories)"""
+    cat1 = Category(name="Studia", user_id=user.id)
+    cat2 = Category(name="Praca", user_id=user.id)
+    cat3 = Category(name="Dom", user_id=user.id)
+    db.session.add(cat1)
+    db.session.add(cat2)
+    db.session.add(cat3)
+    db.session.commit()
+
 
 
 if __name__ == "__main__":
