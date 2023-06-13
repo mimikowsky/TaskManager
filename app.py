@@ -392,6 +392,10 @@ def ffilter_tasks():
     selected_categories = request.form.getlist('kategoria')
     selected_categories = [int(category) for category in selected_categories]
     
+    if len(selected_categories) == 0:
+        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()), get_task_name=get_task_name,
+                               categories = Category.query.filter_by(user_id=current_user.id).all())
+    
     category_filter = Task.category.in_(selected_categories)
     tasks=Task.query.filter_by(user_id=current_user.id).filter(category_filter).order_by(Task.deadline.asc())
     

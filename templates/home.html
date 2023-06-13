@@ -59,8 +59,9 @@
           <label><input type="checkbox" name="kategoria" value="{{ category.id }}"> {{ category.name }}</label><br>
           {% endfor %}
         </div>
-        <button type="submit">Filtruj</button>
+        <button type="submit" class="btn btn-outline-success">Filtruj</button>
       </form>
+      <br>
     </div>
 
   {% if tasks.count() == 0 %}
