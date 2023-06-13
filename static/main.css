@@ -214,6 +214,6 @@ body {
   }
 
   .grid-item {
-    max-width: 10px;
+    display: flex;
     /* Dodatkowe style dla elementów */
   }

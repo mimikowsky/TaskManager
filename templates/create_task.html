@@ -73,8 +73,11 @@
                 {% else %}
                     <div class="grid-item">
                         {{ form.category(class="form-select") }}
+                        <div style="margin-left: 20px"><a class="btn btn-outline-success" href="{{ url_for('create_category') }}">Dodaj kategorię</a></div>
                     </div>
                 {% endif %}
+
+                
             </div>
 
         </fieldset>

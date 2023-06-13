@@ -45,5 +45,5 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Zmień hasło')
 
 class CategoryForm(FlaskForm):
-    name = StringField('Stwórz kategorię')
+    name = StringField('Stwórz kategorię', validators=[DataRequired()])
     submit = SubmitField('Dodaj')

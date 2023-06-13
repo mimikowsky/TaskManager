@@ -1,4 +1,4 @@
-import secrets, os
+import secrets, os, sys
 from PIL import Image
 from flask import Flask, render_template, url_for, redirect, flash, request, abort, jsonify
 from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm, RequestResetForm, ResetPasswordForm, CategoryForm
@@ -9,7 +9,6 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from notifications import show_notification
 from task_to_google import add_to_calendar
-import sys
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import and_
@@ -31,20 +30,6 @@ app.config['MAIL_USERNAME'] = 'taskmanagerdk@gmail.com'
 app.config['MAIL_PASSWORD'] = 'ioyujmjziljlbmfe'
 mail = Mail(app)
 
-tasks = [
-    {
-        'id': 1,
-        'title': 'Msid projekt',
-        'description': 'Analiza danych',
-        'deadline': datetime(2023, 6, 3, 12, 0, 0)
-    },
-    {
-        'id': 2,
-        'title': 'Kolokwium linux',
-        'description': 'Koncowy test u dr Chudzika',
-        'deadline': datetime(2023, 6, 10, 9, 0, 0)
-    }
-]
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -364,7 +349,7 @@ def create_category():
             db.session.commit()
             flash('Kategoria została dodana!', 'success')
 
-        return redirect(url_for('home'))
+        return redirect(url_for('new_task'))
     return render_template("create_category.html", form=form)
     
 def get_task_name(id):
@@ -381,9 +366,11 @@ def initilize_categories_for_user(user):
     cat1 = Category(name="Studia", user_id=user.id)
     cat2 = Category(name="Praca", user_id=user.id)
     cat3 = Category(name="Dom", user_id=user.id)
+    cat4 = Category(name="Inne", user_id=user.id)
     db.session.add(cat1)
     db.session.add(cat2)
     db.session.add(cat3)
+    db.session.add(cat4)
     db.session.commit()
 
 @app.route('/filtruj', methods=['POST'])
@@ -391,6 +378,10 @@ def initilize_categories_for_user(user):
 def ffilter_tasks():
     selected_categories = request.form.getlist('kategoria')
     selected_categories = [int(category) for category in selected_categories]
+    
+    if len(selected_categories) == 0:
+        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()), get_task_name=get_task_name,
+                               categories = Category.query.filter_by(user_id=current_user.id).all())
     
     category_filter = Task.category.in_(selected_categories)
     tasks=Task.query.filter_by(user_id=current_user.id).filter(category_filter).order_by(Task.deadline.asc())
