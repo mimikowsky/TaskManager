@@ -27,7 +27,11 @@
       function showFilterOptions() {
       var filterOptions = document.getElementById("filter-options");
 
+      if (filterOptions.style.display === "block") {
+        filterOptions.style.display = "none";
+      } else {
       filterOptions.style.display = "block";
+      }
     }
 
     function closeFilterOptions() {
@@ -39,8 +43,7 @@
     </script>
 
     <div class="d-flex justify-content-end mb-3">
-      
-      <a class = "btn btn-to-right" style = "font-family:georgia" onclick="showFilterOptions()">
+      <a class="btn btn-to-right" style="font-family: georgia" onclick="showFilterOptions()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
           <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
         </svg>
@@ -48,14 +51,16 @@
       </a>
     </div>
 
-    <div id="filter-options"  style="display: none;">
+    <div id="filter-options" style="display: none;">
       <h2>Dostępne kategorie:</h2>
-      <div class="category-list">
-        <ul class="category">Kategoria 1</ul>
-        <ul class="category">Kategoria 2</ul>
-        <ul class="category">Kategoria 3</ul>
-        <a class="btn" onclick="closeFilterOptions()"> Zapisz </a>
-      </div>
+      <form action="/filtruj" method="POST">
+        <div class="category-list">
+          {% for category in categories %}
+          <label><input type="checkbox" name="kategoria" value="{{ category.id }}"> {{ category.name }}</label><br>
+          {% endfor %}
+        </div>
+        <button type="submit">Filtruj</button>
+      </form>
     </div>
 
   {% if tasks.count() == 0 %}

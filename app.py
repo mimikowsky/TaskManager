@@ -12,6 +12,7 @@ from task_to_google import add_to_calendar
 import sys
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from sqlalchemy import and_
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '31258776c638a3aa4c4cd33912a9aec2'
@@ -113,7 +114,8 @@ def hello_name(name):
 @app.route("/home")
 def home():
     if current_user.is_authenticated:
-        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()), get_task_name=get_task_name)
+        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()), get_task_name=get_task_name,
+                               categories = Category.query.filter_by(user_id=current_user.id).all())
     return redirect(url_for('login'))
 
 @app.route("/about")
@@ -384,7 +386,23 @@ def initilize_categories_for_user(user):
     db.session.add(cat3)
     db.session.commit()
 
-
+@app.route('/filtruj', methods=['POST'])
+@login_required
+def ffilter_tasks():
+    selected_categories = request.form.getlist('kategoria')
+    selected_categories = [int(category) for category in selected_categories]
+    
+    category_filter = Task.category.in_(selected_categories)
+    tasks=Task.query.filter_by(user_id=current_user.id).filter(category_filter).order_by(Task.deadline.asc())
+    
+    categs = Category.query.filter(Category.id.in_(selected_categories)).all()
+    category_names = [category.name for category in categs]
+    category_names_string = ', '.join(category_names)
+    mess = f"Filtr kategorii: {category_names_string}"
+    
+    flash(mess, 'success')
+    return render_template('home.html', tasks = tasks, get_task_name=get_task_name,
+                               categories = Category.query.filter_by(user_id=current_user.id).all())
 
 if __name__ == "__main__":
     app.run(debug=True)
