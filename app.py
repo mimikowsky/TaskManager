@@ -1,7 +1,7 @@
 import secrets, os
 from PIL import Image
 from flask import Flask, render_template, url_for, redirect, flash, request, abort, jsonify
-from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm, RequestResetForm, ResetPasswordForm
+from forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm, RequestResetForm, ResetPasswordForm, CategoryForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from datetime import datetime
@@ -12,6 +12,7 @@ from task_to_google import add_to_calendar
 import sys
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from sqlalchemy import and_
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '31258776c638a3aa4c4cd33912a9aec2'
@@ -56,6 +57,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(60), nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     tasks = db.relationship('Task', backref='author', lazy=True)
+    categories = db.relationship('Category', backref='owner', lazy=True)
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
@@ -83,11 +85,22 @@ class Task(db.Model):
     one_hour_reminder = db.Column(db.Boolean, nullable=False)
     one_day_reminder = db.Column(db.Boolean, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    category = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    
 
     def __repr__(self):
         return f"Task('{self.title}', '{self.deadline}')"
 
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    tasks = db.relationship('Task', backref='type', lazy=True)
 
+
+    def __repr__(self):
+        return f"Category {self.name}"
+    
 
 @app.route("/hello")
 def hello_world():
@@ -101,7 +114,8 @@ def hello_name(name):
 @app.route("/home")
 def home():
     if current_user.is_authenticated:
-        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()))
+        return render_template('home.html', tasks=Task.query.filter_by(user_id=current_user.id).order_by(Task.deadline.asc()), get_task_name=get_task_name,
+                               categories = Category.query.filter_by(user_id=current_user.id).all())
     return redirect(url_for('login'))
 
 @app.route("/about")
@@ -124,6 +138,8 @@ def register():
             db.session.add(user)
             db.session.commit()
             flash(f'Utworzono konto dla użytkownika {form.username.data}!', 'success')
+            
+            initilize_categories_for_user(user)
             return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -198,19 +214,25 @@ def new_task():
     except:
         pass
     form = TaskForm()
+
+    categs = Category.query.filter_by(user_id=current_user.id).all()
+    choices = [(category.id, category.name) for category in categs]
+    form.category.choices = choices
+
     if deadline != None:
         form.deadline.data = deadline_dt
+        
     if form.validate_on_submit():
         task = Task(title=form.title.data, deadline=form.deadline.data, description=form.description.data,
                     deadline_reminder=form.deadline_reminder.data, one_hour_reminder=form.one_hour_reminder.data,
-                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id)
+                    one_day_reminder=form.one_day_reminder.data, user_id=current_user.id, category=form.category.data)
         #datetime.strptime(form.deadline.data, '%Y-%m-%d %H:%M:%S')
         db.session.add(task)
         db.session.commit()
         flash('Zadanie zostało dodane!', 'success')
         return redirect(url_for('home'))
-
-    return render_template('create_task.html', title='Nowe zadanie', form=form, legend='Nowe zadanie')
+   
+    return render_template('create_task.html', title='Nowe zadanie', form=form, legend='Nowe zadanie', categories=Category.query.filter_by(user_id=current_user.id))
 
 @app.route("/task/<int:task_id>")
 def task(task_id):
@@ -224,6 +246,11 @@ def update_task(task_id):
     if task.author != current_user:
         abort(403)
     form = TaskForm()
+    
+    categs = Category.query.filter_by(user_id=current_user.id).all()
+    choices = [(category.id, category.name) for category in categs]
+    form.category.choices = choices
+
     if form.validate_on_submit():
         task.title = form.title.data
         task.description = form.description.data
@@ -231,6 +258,7 @@ def update_task(task_id):
         task.deadline_reminder = form.deadline_reminder.data
         task.one_hour_reminder = form.one_hour_reminder.data
         task.one_day_reminder = form.one_day_reminder.data
+        task.category = form.category.data
         db.session.commit()
         flash('Zadanie zaktualizowano pomyślnie!', 'success')
         return redirect(url_for('home'))
@@ -241,9 +269,9 @@ def update_task(task_id):
         form.deadline_reminder.data = task.deadline_reminder
         form.one_hour_reminder.data = task.one_hour_reminder
         form.one_day_reminder.data = task.one_day_reminder
-        print(task.deadline)
+        form.category.data = task.category
     return render_template('create_task.html', title='Aktualizuj zadanie',
-                           form=form, legend='Aktualizuj zadanie')
+                           form=form, legend='Aktualizuj zadanie', categories=Category.query.filter_by(user_id=current_user.id))
 
 @app.route("/task/<int:task_id>/delete", methods=['POST'])
 @login_required
@@ -319,6 +347,62 @@ def reset_token(token):
         flash(f'Hasło zostało zmienione. Możesz teraz się zalogować.', 'success')
         return redirect(url_for('login'))
     return render_template('reset_token.html', title='Resetuj hasło', form=form)
+
+@app.route("/create_category", methods = ['GET', 'POST'])
+@login_required
+def create_category():
+
+    form = CategoryForm()
+
+    if form.validate_on_submit():
+        #categories=Category.query.filter_by(name=form.name.data)
+        if db.session.query(Category).filter_by(name=form.name.data, user_id=current_user.id).first() is not None:
+            flash('Kategoria o tej nazwie juz istnieje!', 'warning')
+        else:
+            category = Category(name=form.name.data, user_id=current_user.id)
+            db.session.add(category)
+            db.session.commit()
+            flash('Kategoria została dodana!', 'success')
+
+        return redirect(url_for('home'))
+    return render_template("create_category.html", form=form)
+    
+def get_task_name(id):
+    cat = db.session.query(Category).filter_by(id = id).first()
+    try:
+        name = cat.name
+    except:
+        name = "Brak"
+    return name
+
+
+def initilize_categories_for_user(user):
+    """ only use for new registered user (so with no categories)"""
+    cat1 = Category(name="Studia", user_id=user.id)
+    cat2 = Category(name="Praca", user_id=user.id)
+    cat3 = Category(name="Dom", user_id=user.id)
+    db.session.add(cat1)
+    db.session.add(cat2)
+    db.session.add(cat3)
+    db.session.commit()
+
+@app.route('/filtruj', methods=['POST'])
+@login_required
+def ffilter_tasks():
+    selected_categories = request.form.getlist('kategoria')
+    selected_categories = [int(category) for category in selected_categories]
+    
+    category_filter = Task.category.in_(selected_categories)
+    tasks=Task.query.filter_by(user_id=current_user.id).filter(category_filter).order_by(Task.deadline.asc())
+    
+    categs = Category.query.filter(Category.id.in_(selected_categories)).all()
+    category_names = [category.name for category in categs]
+    category_names_string = ', '.join(category_names)
+    mess = f"Filtr kategorii: {category_names_string}"
+    
+    flash(mess, 'success')
+    return render_template('home.html', tasks = tasks, get_task_name=get_task_name,
+                               categories = Category.query.filter_by(user_id=current_user.id).all())
 
 if __name__ == "__main__":
     app.run(debug=True)

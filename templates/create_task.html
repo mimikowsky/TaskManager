@@ -59,6 +59,24 @@
                 {{ form.one_day_reminder(class="form-check-input") }}
                 {{ form.one_day_reminder.label(class="form-check-label") }}
             </div>
+        
+            <br>
+            <div class="form-group grid-container">
+                {{ form.category.label(class="form-control-label") }}
+                {% if form.category.errors %}
+                    {{ form.category(class="form-select is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.category.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="grid-item">
+                        {{ form.category(class="form-select") }}
+                    </div>
+                {% endif %}
+            </div>
+
         </fieldset>
         <div class="form-group">
             {{ form.submit(class="btn btn-success") }}

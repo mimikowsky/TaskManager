@@ -206,3 +206,14 @@ body {
     justify-content: center;
     align-items: center;
   }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 3px;
+  }
+
+  .grid-item {
+    max-width: 10px;
+    /* Dodatkowe style dla elementów */
+  }
